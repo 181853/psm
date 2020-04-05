@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <title>anybook</title>
+</head>
+<body>
+
+<main>
+
+ <form id="myForm" name="myForm">
+  <div>
+   <label for="author">Imię i nazwisko autora: </label> <input id="author" name="author" required type="text">
+  </div>
+  <div>
+   <label for="title">Tytuł książki: </label> <input id="title" name="title" required type="text">
+  </div>
+  <div>
+   <label for="genre">Gatunek literacki: </label> <input id="genre" name="genre" required type="text">
+  </div>
+  <div>
+   <label for="publishYear">Rok wydania: </label> <input id="publishYear" name="publishYear" required type="number">
+  </div>
+  <div>
+   <label for="isbn">Numer ISBN: </label> <input id="isbn" name="isbn" required type="text">
+  </div>
+
+  <button type="submit">Dodaj książkę</button>
+ </form>
+
+ <div>
+  <h2>Dodana książka</h2>
+  <div>Imię i nazwisko autora: <span id="db_author"></span></div>
+  <div>Tytuł książki: <span id="db_title"></span></div>
+  <div>Gatunek literacki: <span id="db_genre"></span></div>
+  <div>Rok wydania: <span id="db_publishYear"></span></div>
+  <div>Numer ISBN: <span id="db_isbn"></span></div>
+ </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/7.13.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.13.2/firebase-firestore.js"></script>
+<script>
+  (() => {
+    const firebaseConfig = {};
+
+    firebase.initializeApp(firebaseConfig);
+
+    const db = firebase.firestore();
+    const form = document.getElementById("myForm");
+
+    const writeBookToHTML = (data) => {
+      document.getElementById('db_author').innerText = data.author;
+      document.getElementById('db_title').innerText = data.title;
+      document.getElementById('db_genre').innerText = data.genre;
+      document.getElementById('db_publishYear').innerText = data.publishYear;
+      document.getElementById('db_isbn').innerText = data.isbn
+    };
+
+    const readAnyBookById = (id) => {
+      db.collection("anyBook").doc(id).get().then((doc) => {
+        if (doc.exists) {
+          const data = doc.data();
+
+          writeBookToHTML(data)
+        } else {
+          // doc.data() will be undefined in this case
+          console.log("No such document!");
+        }
+      }).catch((error) => {
+        console.log("Error getting document:", error);
+      });
+    };
+
+    const addAnyBook = (newBook) => {
+      db.collection("anyBook").add(newBook)
+        .then((docRef) => {
+          console.log("Document written with ID: ", docRef.id);
+
+          readAnyBookById(docRef.id)
+        })
+        .catch((error) => {
+          console.error("Error adding document: ", error);
+        });
+    };
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const newBook = [...form.elements].reduce((acc, next) => {
+        if (!acc[next.id] && next.nodeName === 'INPUT') {
+          acc[next.id] = next.value
+        }
+
+        return acc
+      }, {});
+
+      addAnyBook(newBook);
+
+      form.reset()
+    });
+  })();
+</script>
+
+</body>
+</html>

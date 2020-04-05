@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <title>save</title>
+ <style>
+  .mb {
+   margin-bottom: 20px;
+  }
+
+  pre, ol {
+   height: 200px;
+   overflow-y: auto;
+  }
+ </style>
+</head>
+<body>
+
+<main>
+ <form id="myForm">
+  <div class="mb">
+   <label for="file">Wybierz plik</label> <input id="file" name="file" type="file">
+  </div>
+  <div class="mb">
+   <button type="submit">Wczytaj zawartość pliku do bazy</button>
+  </div>
+ </form>
+
+ <pre><code id="code"></code></pre>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/7.13.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.13.2/firebase-firestore.js"></script>
+<script>
+  (() => {
+    const firebaseConfig = {};
+
+    firebase.initializeApp(firebaseConfig);
+
+    const db = firebase.firestore();
+    const batch = db.batch();
+    const fileReader = new FileReader();
+    const code = document.getElementById('code');
+    const form = document.getElementById("myForm");
+    const file = document.getElementById("file");
+
+    let parsedData = [];
+
+    const writeInfo = (data) => {
+      parsedData = data;
+      code.innerHTML = JSON.stringify(data, null, 2);
+    };
+
+    fileReader.onload = (event) => writeInfo(JSON.parse(event.target.result));
+
+    file.addEventListener('change', (event) => fileReader.readAsText(event.target.files[0]), false);
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      parsedData.forEach((doc) => {
+        batch.set(db.collection('save').doc(), doc);
+      });
+
+      batch.commit().then(() => {
+        console.log("Zapisano do bazy")
+      });
+    });
+  })();
+</script>
+
+</body>
+</html>

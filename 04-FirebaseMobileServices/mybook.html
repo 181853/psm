@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+ <meta charset="UTF-8">
+ <title>mybook</title>
+</head>
+
+<body>
+
+<main>
+ <div>Imię i nazwisko autora: <span id="db_author"></span></div>
+ <div>Tytuł książki: <span id="db_title"></span></div>
+ <div>Gatunek literacki: <span id="db_genre"></span></div>
+ <div>Rok wydania: <span id="db_publishYear"></span></div>
+ <div>Numer ISBN: <span id="db_isbn"></span></div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/7.13.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.13.2/firebase-firestore.js"></script>
+<script>
+  (() => {
+    const firebaseConfig = {};
+
+    firebase.initializeApp(firebaseConfig);
+
+    const db = firebase.firestore();
+
+    const writeBookToHTML = (data) => {
+      console.log(data);
+
+      document.getElementById('db_author').innerText = data.author;
+      document.getElementById('db_title').innerText = data.title;
+      document.getElementById('db_genre').innerText = data.genre;
+      document.getElementById('db_publishYear').innerText = data.publishYear;
+      document.getElementById('db_isbn').innerText = data.isbn
+    };
+
+    const getBook = () => {
+      db.collection("myBook").get().then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+
+          writeBookToHTML(data)
+        });
+      });
+    };
+
+    getBook()
+  })();
+</script>
+
+</body>
+</html>
